@@ -1,0 +1,31 @@
+{
+    "key_pubs": [
+        {
+            "title": "ProteomicsDB: toward a FAIR open-source resource for life-science research",
+            "author": "Lautenbacher et al.",
+            "publication": "Nucleic Acids Research, Volume 50, Issue D1, 7 January 2022, Pages D1541–D1552",
+            "link": "https://doi.org/10.1093/nar/gkab1026"
+        },
+        {
+            "title": "ProteomicsDB: a multi-omics and multi-organism resource for life science research",
+            "author": "Samaras et al.",
+            "publication": "Nucleic Acids Research, Volume 48, Issue D1, 08 January 2020, Pages D1153-D1163",
+            "link": "https://doi.org/10.1093/nar/gkz974"
+        },
+        {
+            "title": "ProteomicsDB",
+            "author": "Schmidt, Samaras et al.",
+            "publication": "Nucleic Acids Research, Volume 46, Issue D1, 04 January 2018, Pages D1271-D1281",
+            "link": "https://doi.org/10.1093/nar/gkx1029"
+        }
+    ],
+    "more": [
+        {
+            "title": "Mass-spectrometry-based draft of the human proteome",
+            "author": "Wilhelm et al.",
+            "publication": "Nature 509, 582-587 (2014)",
+            "link": "https://www.ncbi.nlm.nih.gov/pubmed/24870543"
+        }
+    ],
+    "further": []
+}

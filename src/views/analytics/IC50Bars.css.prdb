@@ -1,0 +1,61 @@
+.IC50ProteinBar {
+  cursor: pointer;
+}
+
+.IC50Bars .IC50ProteinBar,
+.IC50Legend .IC50MoreThanTenfold {
+  fill: lightgrey;
+}
+
+.IC50Bars .IC50ProteinBar.IC50SelectedProtein,
+.IC50Legend .IC50SelectedProtein {
+  fill: red;
+}
+
+.IC50Bars .IC50BetterValue {
+  fill: lightgreen;
+}
+
+.IC50Bars .IC50AtMostTenfold {
+  fill: lightblue;
+}
+
+.IC50Bars .IC50ProteinBar.IC50ActiveProtein {
+  stroke: #000000;
+  stroke-width: 1px;
+}
+
+.IC50Bars a .ProteinLabel{
+  font-family: Arial,Helvetica,sans-serif;
+  font: 10px sans-serif;
+  text-anchor: end;
+  fill: #00679e;
+}
+
+.IC50Bars .Inhibitor{
+  font-family: Arial,Helvetica,sans-serif;
+  font: 12px sans-serif;
+  font-weight: bold;
+  text-anchor: middle;
+}
+
+.IC50Bars .AxisTitle {
+  font-family: Arial,Helvetica,sans-serif;
+  font: 10px sans-serif;
+  text-anchor: middle;
+}
+
+.IC50Legend {
+  font-family: Arial,Helvetica,sans-serif;
+  font-size: 12px;
+}
+
+.IC50LegendGroup {
+  font-family: Arial,Helvetica,sans-serif;
+  font: 12px sans-serif;
+}
+
+.IC50Bars .IC50Title{
+  font-size: 18px;
+  font-family: Arial,Helvetica,sans-serif;
+}

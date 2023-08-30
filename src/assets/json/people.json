@@ -1,0 +1,468 @@
+{
+    "leaders": [
+        {
+            "name": "Mathias Wilhelm",
+            "role": "Team leader",
+            "avatar": "mathias.jpg",
+            "text": "",
+            "affiliation": "Department of Computational Mass Spectrometry",
+            "position": "Professor",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www1.ls.tum.de/en/compms/group-members/people/mathias-wilhelm/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/mathias-wilhelm-9567b7181/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Coordination"
+        }
+    ],
+    "coreTeamMembers": [
+        {
+            "name": "Kyra Erckert",
+            "role": "Full Stack Developer, Bioinformatician",
+            "avatar": "kerckert.jpg",
+            "text": "",
+            "affiliation": "Rostlab",
+            "position": "PhD Student",
+            "social": [
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/kyra-erckert-6085b6175/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature Development, Data Integration"
+        },
+        {
+            "name": "Wassim Gabriel",
+            "role": "Full Stack Developer, Bioinformatician",
+            "avatar": "wgabriel.jpg",
+            "affiliation": "Department of Computational Mass Spectrometry",
+            "position": "PhD Student",
+            "text": "",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www1.ls.tum.de/en/compms/people/people/wassim-gabriel/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/wassim-gabriel-93b91737/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature Development, Data Integration"
+        },
+        {
+            "name": "Firas Hamood",
+            "role": "Full Stack Developer, Bioinformatician",
+            "avatar": "fhamood.jpg",
+            "affiliation": "Chair of Proteomics and Bioanalytics",
+            "position": "PhD Student",
+            "text": "",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www1.ls.tum.de/en/proteomics/people/firas-hamood/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/firas-h-2a5613180/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature Development, Data Integration"
+        },
+        {
+            "name": "Cecilia Jensen",
+            "role": "Frontend Developer, Bioinformatician",
+            "avatar": "cjensen.jpg",
+            "affiliation": "Chair of Proteomics and Bioanalytics",
+            "position": "PhD Student",
+            "text": "",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www1.ls.tum.de/proteomics/people/cecilia-jensen/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/cecilia-bang-jensen-b81846ba/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature Development, Data Integration"
+        },
+        {
+            "name": "Elias Kahl",
+            "role": "Full Stack Developer, Bioinformatician",
+            "avatar": "",
+            "affiliation": "Department of Computational Mass Spectrometry",
+            "position": "Research Assistant",
+            "text": "",
+            "social": [],
+            "focus": "Feature Development, Data Integration"
+        },
+        {
+            "name": "Mostafa Kalhor",
+            "role": "Full Stack Developer, Bioinformatician",
+            "avatar": "mkalhor.jpg",
+            "text": "",
+            "affiliation": "Department of Computational Mass Spectrometry",
+            "position": "PhD Student",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www1.ls.tum.de/en/compms/group-members/mostafa-kalhor/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/mostafa-kalhor-8a63701b7/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature Development, Data Integration"
+        },
+        {
+            "name": "Ludwig Lautenbacher",
+            "role": "Full Stack Developer, Bioinformatician",
+            "avatar": "llautenbacher.jpg",
+            "text": "",
+            "affiliation": "Department of Computational Mass Spectrometry",
+            "position": "PhD Student",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www1.ls.tum.de/en/compms/group-members/people/ludwig-lautenbacher/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "GitHub",
+                    "link": "https://github.com/LLautenbacher",
+                    "icon": "mdi mdi-github"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/ludwig-lautenbacher-b3414019b/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature Development, Data Integration"
+        },
+        {
+            "name": "Julian Müller",
+            "role": "Full Stack Developer, Bioinformatician",
+            "avatar": "jmueller.jpg",
+            "text": "",
+            "affiliation": "Chair of Proteomics and Bioanalytics",
+            "position": "PhD Student",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www1.ls.tum.de/proteomics/people/julian-mueller/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "GitHub",
+                    "link": "https://github.com/jmueller95/",
+                    "icon": "mdi mdi-github"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/julian-m%C3%BCller-4a056a20a/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature Development, Data Integration"
+        },
+        {
+            "name": "Mario Picciani",
+            "role": "Full Stack Developer, Bioinformatician",
+            "avatar": "mpicciani.webp",
+            "affiliation": "Department of Computational Mass Spectrometry",
+            "position": "PhD Student",
+            "text": "",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www1.ls.tum.de/en/compms/group-members/mario-picciani/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "GitHub",
+                    "link": "https://github.com/picciama",
+                    "icon": "mdi mdi-github"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/mario-picciani-ab9288207/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "General Machine Learning, Drug Response Prediction, Data Integration"
+        },
+        {
+            "name": "Amirhossein Sakhteman",
+            "role": "Full Stack Developer, Bioinformatician",
+            "avatar": "asakhteman.jpg",
+            "text": "",
+            "affiliation": "Chair of Proteomics and Bioanalytics",
+            "position": "Postdoc",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www.mls.ls.tum.de/proteomics/people/dr-amirhossein-sakhteman",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "GitHub",
+                    "link": "https://github.com/amir1715",
+                    "icon": "mdi mdi-github"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/amirhossein-sakhteman-46872b11a/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature Development, Data Integration"
+        },
+        {
+            "name": "Marwin Shraideh",
+            "role": "Software Architect, Product Manager",
+            "avatar": "mshraideh.jpg",
+            "affiliation": "Chair of Information Systems and Business Process Management ",
+            "position": "Research Associate",
+            "text": "",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www.in.tum.de/i17/wittges-lab/staff/shraideh-marwin/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/marwin-shraideh/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Big Data, Platform Architecture, Business Intelligence"
+        },
+        {
+            "name": "Armin Soleymaniniya",
+            "role": "Full Stack Developer, Bioinformatician",
+            "avatar": "asoleymaniniya.jpg",
+            "text": "",
+            "affiliation": "Department of Computational Mass Spectrometry",
+            "position": "PhD Student",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www.mls.ls.tum.de/en/compms/group-members/armin-soleymaniniya/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "GitHub",
+                    "link": "https://github.com/arminsl",
+                    "icon": "mdi mdi-github"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/arminsl/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature Development, Data Integration"
+        },
+        {
+            "name": "Matthew The",
+            "role": "Full Stack Developer, Bioinformatician",
+            "avatar": "mthe.jpg",
+            "text": "",
+            "affiliation": "Chair of Proteomics and Bioanalytics",
+            "position": "Postdoc",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www1.ls.tum.de/proteomics/people/dr-matthew-the/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "GitHub",
+                    "link": "https://github.com/MatthewThe",
+                    "icon": "mdi mdi-github"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/matthewthe",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature Development, Data Integration"
+        }
+    ],
+    "coreTeamEmeriti": [
+        {
+            "name": "Siegfried Gessulat",
+            "role": "Frontend developer, Software developer",
+            "avatar": "sgessulat.jpg",
+            "text": "",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://tkschmidt.me/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/siegfried-gessulat/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature development, Peptide features prediction"
+        },
+        {
+            "name": "Patroklos Samaras",
+            "role": "Full stack developer, Bioinformatician",
+            "avatar": "psamaras.jpg",
+            "text": "",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://www.proteomics.wzw.tum.de/people/patroklos-samaras/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "GitHub",
+                    "link": "https://github.com/patroklossam",
+                    "icon": "mdi mdi-github"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/patroklos-samaras-846ab63a/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature development, data integration"
+        },
+        {
+            "name": "Tobias Schmidt",
+            "role": "Frontend and backend developer, Bioinformatician",
+            "avatar": "tkschmidt.jpg",
+            "text": "",
+            "social": [
+                {
+                    "social": "website",
+                    "link": "https://tkschmidt.me/",
+                    "icon": "mdi mdi-open-in-new"
+                },
+                {
+                    "social": "GitHub",
+                    "link": "https://github.com/tkschmidt",
+                    "icon": "mdi mdi-github"
+                },
+                {
+                    "social": "LinkedIn",
+                    "link": "https://www.linkedin.com/in/tkschmidt/",
+                    "icon": "mdi mdi-linkedin"
+                }
+            ],
+            "focus": "Feature development, Peptide features predictions"
+        }
+    ],
+    "formerTeamMembers": [
+        {
+            "name": "Mohammed AbuJarour (SAP - ICP)",
+            "role": "software development"
+        },
+        {
+            "name": "Stephan Aiche (SAP - ICP)",
+            "role": "bioinformatician, software development",
+            "avatar": "",
+            "text": "",
+            "website": ""
+        },
+        {
+            "name": "Marcus Bantscheff (GSK)",
+            "role": "scientist, concepts"
+        },
+        {
+            "name": "Wilhelm Becker (SAP - ICP)",
+            "role": "software developer, ui development"
+        },
+        {
+            "name": "Lars Butzmann (SAP - ICP)",
+            "role": "software developer, ui development"
+        },
+        {
+            "name": "Helmut Cossmann (SAP)",
+            "role": "dba, infrastructure setup"
+        },
+        {
+            "name": "Hans-Christian Ehrlich (SAP - ICP)",
+            "role": "bioinformatician, software development"
+        },
+        {
+            "name": "Adelya Fatykhova (SAP - ICP)",
+            "role": "continuous integration, testing"
+        },
+        {
+            "name": "Martin Frejno (TUM / SAP)",
+            "role": "bioinformatician, software development, data analysis"
+        },
+        {
+            "name": "Anja Gerstmair (SAP)",
+            "role": "software developer, project coordination"
+        },
+        {
+            "name": "Hannes Hahne (TUM)",
+            "role": "scientist, UI and data analysis concepts, UI prototyping, proteomics data"
+        },
+        {
+            "name": "Jan Huenges (SAP - ICP)",
+            "role": "software developer, ui development"
+        },
+        {
+            "name": "Ingrid Hurbain (SAP - ICP)",
+            "role": "software developer, ui development"
+        },
+        {
+            "name": "Marcus Lieberenz (SAP)",
+            "role": "software developer, ui development"
+        },
+        {
+            "name": "Toby Mathieson (GSK)",
+            "role": "bioinformatician, data collation"
+        },
+        {
+            "name": "Lars Rueckert (SAP - ICP)",
+            "role": "software developer, ui development"
+        },
+        {
+            "name": "Mikhail Savitski (GSK)",
+            "role": "scientist, data analysis"
+        },
+        {
+            "name": "Judith Schlegl (SAP)",
+            "role": "scientist, dba and project coordination"
+        },
+        {
+            "name": "David Weese (SAP - ICP)",
+            "role": "software development"
+        },
+        {
+            "name": "Emanuel Ziegler (SAP)",
+            "role": "software developer, backend development"
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+[
+    {
+        "category": "General Use",
+        "qandas": [
+            {
+                "answer": "In general we support all browsers if you want to browse proteomics data. If you are using Internet Explorer, it should be at least version 10. For file upload we unfortunately only support Google Chrome, Mozilla Firefox and Safari.</p>",
+                "question": "Which browsers are supported?"
+            },
+            {
+                "answer": "As of version 1.1, you do not need to register yourself as a new user in order to use the ProteomicsDB webpage and the API.",
+                "question": "How do I register/login?"
+            },
+            {
+                "answer": "\t<p style=\"text-align: justify\">Please acknowledge ProteomicsDB in your publications by citing</p><p><a href=\"https://doi.org/10.1093/nar/gkx1029\" target=\"_blank\" class=\"sapUiLnk\">Schmidt, Samaras et al., ProteomicsDB. Nucleic Acids Res. <i>2017 Nov 2</i></a>,</p> <p><a href=\"https://doi.org/10.1093/nar/gkx1029\" target=\"_blank\" class=\"sapUiLnk\">Samaras et al., ProteomicsDB: a multi-omics and multi-organism resource for life science research. Nucleic Acids Res. <i>2020 Jan 8</i></a>, or </p><p><a href=\"https://doi.org/10.1093/nar/gkz974\" target=\"_blank\" class=\"sapUiLnk\">Lautenbacher et al., ProteomicsDB: toward a FAIR open-source resource for life-science research. Nucleic Acids Res. <i>2022 Jan 7</i></a></p><p style=\"text-align: justify\">and/or the reference below while referring to our initial analysis of data in ProteomicsDB:</p><p><a href=\"http://www.ncbi.nlm.nih.gov/pubmed/24870543\" target=\"_blank\" class=\"sapUiLnk\">Wilhelm et al., Mass-spectrometry-based draft of the human proteome. Nature. <i>2014 May 29;509(7502):582-7</i></a>",
+                "question": "How do I cite ProteomicsDB?"
+            }
+        ]
+    },
+    {
+        "category": "Data analysis",
+        "qandas": [
+            {
+                "answer": "Evidence refers to the level of mass spectrometry-based evidence for a protein. <b>Isoform</b> indicates that there is evidence for a certain protein isoform in ProteomicsDB, i.e. a peptide that is unique for that particular isoform. <b>Protein</b> indicates that ProteomicsDB contains at least a single peptide, which is unique for the gene encoding the protein, but that there is not enough evidence to distinguish protein isoforms. <b>No evidence</b> just means that there is no information available in ProteomicsDB.",
+                "question": "What is the meaning of no evidence/protein/isoform“evidence”?"
+            }
+        ]
+    }
+]
