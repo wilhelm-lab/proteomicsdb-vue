@@ -71,6 +71,15 @@
     >
       PDF
     </v-btn>
+    <v-btn
+      v-if="json"
+      :disabled="disabled"
+      fab
+      small
+      @click="raiseEvent('json')"
+    >
+      JSON
+    </v-btn>
   </v-speed-dial>
 </template>
 
@@ -119,6 +128,10 @@ export default {
       default: false
     },
     pdf: {
+      type: Boolean,
+      default: false
+    },
+    json: {
       type: Boolean,
       default: false
     },

@@ -159,7 +159,7 @@ export default {
         if (this.currentAxiosCancelTokenSource)
           this.currentAxiosCancelTokenSource.cancel();
         this.currentAxiosCancelTokenSource = cancelTokenSource;
-        this.isLoading = true;
+        // that.isLoading = true;
         axios
           .get(urlCurveData, {
             params: {
@@ -199,7 +199,10 @@ export default {
               let curveParams = that.responseCurveModel.parameter[i]
               let legendTitle = trimString(curveProps.sequence || curveProps.gene || curveProps.geneNames || curveProps.uniprotAccs, 25)
 
-              if (that.parentPerspective === 'pathway' && curveProps.gene) {
+              if (that.parentPerspective === 'pathway' && curveProps.gene && curveProps.startPosition) {
+                //Replace modified sequence by PTM identifier(s)
+                  legendTitle = that.getModifiedResidues(curveProps.sequence, curveProps.startPosition)
+
                 legendTitle += ` @ ${curveProps.gene}`
                 if(curveProps.experimentName && curveProps.experimentName !== ''){
                   legendTitle += ` (${curveProps.experimentName})`
@@ -241,7 +244,7 @@ export default {
                 curveProps.dotTooltipTitle = `<pre style='text-align: left'><b>${legendTitle}</b><br><br>`;
               }
             }
-            that.isLoading = false;
+            // this.isLoading = false;
           })
           .catch((error) => {
             if (!axios.isCancel(error)) {
@@ -255,6 +258,23 @@ export default {
     getSVG: function () {
       return this.$refs.lineplot.getSVG();
     },
+      getModifiedResidues (modifiedSequence, startPosition) {
+          if (!modifiedSequence) return null
+          // Go through the sequence and get the positions of modifications (relative to the peptide)
+          let intermediateSequence = modifiedSequence
+          const res = []
+          let modIndex = intermediateSequence.indexOf('(')
+          while (modIndex !== -1) {
+              if (modIndex > 0) {
+                  const residue = intermediateSequence[modIndex - 1]
+                  const absolutePosition = Number(startPosition) + Number(modIndex)
+                  res.push(`${residue}${absolutePosition}`)
+              }
+              intermediateSequence = intermediateSequence.replace(/\([a-z]+\)/, '')
+              modIndex = intermediateSequence.indexOf('(')
+          }
+          return res.join('&')
+      },
   },
   created() {
     this.responseCurveModel = this.defaultCurveModel;
