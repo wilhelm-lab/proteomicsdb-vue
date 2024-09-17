@@ -10,12 +10,13 @@
       >
         <div style="padding-left: 8px; margin-bottom: 1em">
           This table is not available!<br>
-          Did you just upload this dataset?<br>
+          Did you upload this dataset only just now?<br>
           Then the enrichment analysis is probably still running.<br>
           If it still is not here after a few minutes, something probably went wrong.<br>
-          Please contract a site administrator.<br>
-          Please note that PTM-SEA, KSEA and KSEA+RoKAI can be performed only for Phosphoproteomic datasets.<br>
-          For other PTM datasets as well as Protein-level datasets, only GSEA is performed.<br>
+          Please contract a site administrator.<br><br>
+          Please note that for non-Phosphoproteomic datasets,<br>only 'PEA Gene-Centric' and 'PEA Gene-Centric Redundant'
+          can be performed.<br>
+          If you uploaded phospho-sites instead of phospho-peptides,<br>all algorithms can be performed except for K-STAR.
         </div>
       </v-alert>
     </v-card-text>

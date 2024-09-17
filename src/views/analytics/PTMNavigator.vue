@@ -140,7 +140,7 @@
                     color="primary"
                     timeout="-1"
                   >
-                    Retrieving Data{{ isUserDataMode ? ' and Sorting Pathways by Relevance...' : '...' }}
+                    Retrieving Data...
                   </v-snackbar>
                   <v-snackbar
                     v-model="doneSnackbar"
@@ -246,6 +246,18 @@
                           @change="onOrganismSelectionChange"
                         />
                       </v-card-text>
+
+                      <v-card-text
+                        v-if="!!datasetNamesForGCRSorting && datasetNamesForGCRSorting.length>0"
+                      >
+                        <v-select
+                          v-model="selectedDatasetNameForGCRSorting"
+                          :items="datasetNamesForGCRSorting"
+                          label="Sort Pathways by Dataset Enrichment:"
+                          clearable
+                        />
+                      </v-card-text>
+
                       <v-card-text>
                         <v-combobox
                           v-model="selectedCanonicalPathway"
@@ -279,24 +291,15 @@
                           @change="filterPathways"
                         />
                         <v-alert
+                          v-if="!!selectedDatasetNameForGCRSorting"
                           color="blue-grey"
                           text
                           icon="mdi-exclamation"
                           class="mt-4 mr-4 pa-4"
                           prominent
+                          style="padding-left: 1px"
                         >
-                          <div
-                            v-if="enrichmentResponses['gcr'].length > 0"
-                            style="padding-left: 1px"
-                          >
-                            Pathways are sorted by their Gene-Centric-Redundant Enrichment Score.
-                          </div>
-                          <div
-                            v-else
-                            style="padding-left: 1px"
-                          >
-                            Pathways are not sorted (no enrichment score available or no dataset loaded).
-                          </div>
+                          Pathways are sorted by their Gene-Centric-Redundant Enrichment Score.
                         </v-alert>
                       </v-card-text>
                     </v-card>
@@ -342,7 +345,7 @@
                         text
                       >
                         If you select a single node in the graph, detailed information on it will pop up
-                        here.
+                        here. Make sure to also check out the 'Selected Peptides' table below the pathway graph!
                       </v-alert>
                     </v-card-text>
                   </v-card>
@@ -435,28 +438,35 @@
                 Save to ProteomicsDB:
               </h2>
             </v-card-title>
-            <v-text-field
-              v-model="customPathwayName"
-              class="pa-4"
-              label="Pathway Name"
-            />
-            <v-btn
-              :disabled="!editorContainsUnsavedChanges || !customPathwayName"
-              color="info"
-              class="ma-4"
-              style="text-transform: none"
-              @click="saveCustomPathway"
+            <v-form
+              ref="saveCustomPathwayForm"
+              v-model="saveCustomPathwayFormValid"
+              lazy-validation
             >
-              Save Diagram
-            </v-btn>
-            <v-btn
-              color="warning"
-              class="ma-4"
-              style="text-transform: none"
-              @click="editSaveOrDiscard();editResetDialogReturnVal=null"
-            >
-              Clear Canvas
-            </v-btn>
+              <v-text-field
+                v-model="customPathwayName"
+                class="pa-4"
+                label="Pathway Name"
+                :rules="[customPathwayNameRules.required, customPathwayNameRules.minLength]"
+              />
+              <v-btn
+                :disabled="!editorContainsUnsavedChanges"
+                color="info"
+                class="ma-4"
+                style="text-transform: none"
+                @click="saveCustomPathway"
+              >
+                Save Diagram
+              </v-btn>
+              <v-btn
+                color="warning"
+                class="ma-4"
+                style="text-transform: none"
+                @click="onClearCanvas"
+              >
+                Clear Canvas
+              </v-btn>
+            </v-form>
           </v-card>
         </template>
         <div v-if="areSomeSelectedDatasetsDecryptM">
@@ -505,6 +515,32 @@
             </v-col>
           </v-row>
         </div>
+        <v-row
+          v-if="pathwaygraphApplicationMode==='viewing'
+            && Object.keys(enrichmentResponses)
+              .some(datasetId =>
+                Object.keys(enrichmentResponses[datasetId])
+                  .some(kai_method => !['ptmsea', 'gcr', 'gc']
+                    .includes(kai_method) && enrichmentResponses[datasetId][kai_method].length > 0))"
+        >
+          <v-col
+            cols="12"
+          >
+            <v-card
+              class="my-4"
+            >
+              <v-card-title>Highlight Kinase Activities:</v-card-title>
+              <v-card-text>
+                <the-kinase-activity-thresholder
+                  v-if="ptmInputList.length > 0 || fpInputList.length > 0"
+                  ref="kinaseActivityThresholder"
+                  :data-in="enrichmentResponses"
+                  @kinase-activities-filtered="perturbedNodes = $event"
+                />
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
       </v-col>
       <v-col
         id="spacereservedforgraph"
@@ -520,8 +556,10 @@
             align-self="end"
           >
             <v-btn-toggle
-              v-model="pathwaygraphApplicationMode"
+              :key="toggleKey"
+              :value="pathwaygraphApplicationMode"
               mandatory
+              @change="onApplicationModeToggle"
             >
               <v-tooltip
                 bottom
@@ -573,10 +611,8 @@
               :disabled="!graphdataSkeleton"
               direction="left"
               svg
-              csv
               :loading="downloadPathwayLoading"
               @svg="downloadPathwaySvg()"
-              @csv="downloadMappedPeptidesCsv()"
             />
           </v-col>
           <template
@@ -636,11 +672,10 @@
               :ptm-input-list.prop="ptmInputListFiltered"
               :full-proteome-input-list.prop="fpInputListFiltered"
               :application-mode.prop="pathwaygraphApplicationMode"
-              :perturbed-nodes.prop="kseaRokaiPerturbedNodes"
+              :perturbed-nodes.prop="perturbedNodes"
               @selectionDetails="onSelectionChanged"
               @selectedNodeTooltip="onInfoboxUpdated"
-              @mousedown="pathwayGraphChanged"
-              @click="pathwayGraphChanged"
+              @pathwayGraphChanged="pathwayGraphChanged"
             />
           </v-col>
         </v-row>
@@ -712,18 +747,74 @@
             </v-btn>
           </v-col>
         </v-row>
-        <template v-if="pathwaygraphApplicationMode==='viewing' && selectedOrganism && selectedOrganism.value === 9606 && isUserDataMode">
-          <v-row>
+        <template v-if="pathwaygraphApplicationMode==='viewing' && selectedOrganism && selectedOrganism.value === 9606">
+          <v-row
+            dense
+          >
             <v-col
-              cols="11"
-              style="position:relative"
+              cols="2"
+              align-self="end"
             >
-              <h2
-                class="text-h6"
-                style="position: absolute; bottom: 0"
+              <v-btn-toggle
+                v-model="enrichmentOrSelectionTable"
+                mandatory
               >
-                Enrichment Analyses:
-              </h2>
+                <v-tooltip
+                  bottom
+                  color="#4d4b4d"
+                >
+                  <template #activator="{ on, attrs }">
+                    <v-btn
+                      value="enrichment"
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      <span class="hidden-sm-and-down">Enrichment Analyses</span>
+
+                      <v-icon right>
+                        mdi-table
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Display the Results of the Enrichment Analyses</span>
+                </v-tooltip>
+                <v-tooltip
+                  bottom
+                  color="#4d4b4d"
+                >
+                  <template #activator="{ on, attrs }">
+                    <v-btn
+                      value="peptide"
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      <span class="hidden-sm-and-down">Selected Peptides</span>
+                      <v-icon right>
+                        mdi-table
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Display Information on the Peptides Selected in the Pathway Graph</span>
+                </v-tooltip>
+                <v-tooltip
+                  bottom
+                  color="#4d4b4d"
+                >
+                  <template #activator="{ on, attrs }">
+                    <v-btn
+                      value="protein"
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      <span class="hidden-sm-and-down">Selected Proteins</span>
+                      <v-icon right>
+                        mdi-table
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Display Information on the Proteins Selected in the Pathway Graph</span>
+                </v-tooltip>
+              </v-btn-toggle>
             </v-col>
             <v-spacer />
             <v-col
@@ -732,6 +823,7 @@
               class="text-right"
             >
               <downloader
+                v-if="enrichmentOrSelectionTable === 'enrichment'"
                 :disabled="ptmInputList.length === 0 && fpInputList.length === 0"
                 class="mr-2 mt-4"
                 direction="left"
@@ -739,42 +831,118 @@
                 :loading="downloadEnrichmentCsvLoading"
                 @csv="downloadEnrichmentCSV"
               />
+              <downloader
+                v-else-if="enrichmentOrSelectionTable === 'peptide'"
+                :disabled="selectedPeptidesTableData.length === 0"
+                class="mr-2 mt-4"
+                direction="left"
+                csv
+                :loading="downloadSelectedPeptidesCsvLoading"
+                @csv="downloadSelectedPeptidesCSV"
+              />
+              <downloader
+                v-else
+                :disabled="selectedProteinsTableData.length === 0"
+                class="mr-2 mt-4"
+                direction="left"
+                csv
+                :loading="downloadSelectedProteinsCsvLoading"
+                @csv="downloadSelectedProteinsCSV"
+              />
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="12">
-              <the-pathway-enrichment-tables
-                v-if="ptmInputList.length > 0 || fpInputList.length > 0"
-                ref="pathwayEnrichmentTable"
-                data-grid-ref-name="pathwayenrichmenttables"
-                :data-in="enrichmentResponses"
-              />
-              <v-card
-                v-else
-                id="enrichment-placeholder"
-                flat
-              >
-                <v-card-text class=" d-flex justify-center align-center">
-                  <v-alert
-                    color="blue-grey"
-                    text
-                    icon="mdi-exclamation"
-                    class="mt-8 pa-8"
-                    prominent
-                  >
-                    <div style="padding-left: 8px">
-                      After you've uploaded a dataset, ProteomicsDB runs multiple enrichment
-                      analysis algorithms on it (e.g. KSEA, PTM-SEA).<br>
-                      When you load the dataset into PTMNavigator,
-                      the enrichment results will be displayed here.<br>
-                      Note that for now, this feature is only implemented for <i>Homo sapiens</i> datasets.<br>
-                      If you select multiple datasets, only the enrichments of the first are displayed
-                      (for the sake of clarity).
-                    </div>
-                  </v-alert>
-                </v-card-text>
-              </v-card>
-            </v-col>
+            <template v-if="enrichmentOrSelectionTable === 'enrichment'">
+              <v-col cols="12">
+                <the-pathway-enrichment-tables
+                  v-if="ptmInputList.length > 0 || fpInputList.length > 0"
+                  ref="pathwayEnrichmentTable"
+                  data-grid-ref-name="pathwayenrichmenttables"
+                  :data-in="enrichmentResponses"
+                />
+                <v-card
+                  v-else
+                  id="enrichment-placeholder"
+                  flat
+                >
+                  <v-card-text class=" d-flex justify-center align-center">
+                    <v-alert
+                      color="blue-grey"
+                      text
+                      icon="mdi-exclamation"
+                      class="mt-8 pa-8"
+                      prominent
+                    >
+                      <div style="padding-left: 8px">
+                        After you've uploaded a dataset, ProteomicsDB runs multiple enrichment
+                        analysis algorithms on it (e.g. KSEA, PTM-SEA).<br>
+                        When you load the dataset into PTMNavigator,
+                        the enrichment results will be displayed here.<br>
+                        Note that for now, this feature is only implemented for <i>Homo sapiens</i> datasets.
+                      </div>
+                    </v-alert>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </template>
+            <template v-else-if="enrichmentOrSelectionTable === 'peptide'">
+              <v-col cols="12">
+                <the-selected-nodes-table
+                  v-if="selectedPeptidesTableData.length > 0"
+                  ref="selectedPeptidesTable"
+                  data-grid-ref-name="selectedpeptidestable"
+                  :data-in="selectedPeptidesTableData"
+                />
+                <v-card
+                  v-else
+                  id="peptide-tables-placeholder"
+                  flat
+                >
+                  <v-card-text class=" d-flex justify-center align-center">
+                    <v-alert
+                      color="blue-grey"
+                      text
+                      icon="mdi-exclamation"
+                      class="mt-8 pa-8"
+                      prominent
+                    >
+                      <div style="padding-left: 8px">
+                        Select peptides in the pathway graph to display their details here.
+                      </div>
+                    </v-alert>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </template>
+            <template v-else>
+              <v-col cols="12">
+                <the-selected-nodes-table
+                  v-if="selectedProteinsTableData.length > 0"
+                  ref="selectedProteinsTable"
+                  data-grid-ref-name="selectedproteinstable"
+                  :data-in="selectedProteinsTableData"
+                />
+                <v-card
+                  v-else
+                  id="protein-tables-placeholder"
+                  flat
+                >
+                  <v-card-text class=" d-flex justify-center align-center">
+                    <v-alert
+                      color="blue-grey"
+                      text
+                      icon="mdi-exclamation"
+                      class="mt-8 pa-8"
+                      prominent
+                    >
+                      <div style="padding-left: 8px">
+                        Select proteins in the pathway graph to display their details here.
+                      </div>
+                    </v-alert>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </template>
           </v-row>
         </template>
         <v-row>
@@ -979,6 +1147,7 @@
             color="warning"
             class="ma-4"
             style="text-transform: none"
+            :disabled="uuid === defaultSessionId"
             @click="editCopyQuestionDialogReturnVal = 'modify'"
           >
             Modify Directly
@@ -993,11 +1162,13 @@
 import { BiowcPathwaygraph } from '@biowc/pathwaygraph'
 import axios from 'axios'
 import responsecurve from '@/vue-d3-component-wrappers/ResponseCurve'
+import TheKinaseActivityThresholder from '../../components/partials/pathways/TheKinaseActivityThresholder'
 import downloader from '@/components/DownloadSpeedDial'
 import utils from '@/utils/downloadUtils'
 import uploadUtils from '@/plugins/CustomUploadUtils'
 import router from '@/router'
 import ThePathwayEnrichmentTables from '../../components/partials/pathways/ThePathwayEnrichmentTables'
+import TheSelectedNodesTable from '../../components/partials/pathways/TheSelectedNodesTable'
 
 if (window.customElements.get('biowc-pathwaygraph') === undefined) {
   window.customElements.define('biowc-pathwaygraph', BiowcPathwaygraph)
@@ -1007,8 +1178,20 @@ export default {
   name: 'Pathway',
   components: {
     ThePathwayEnrichmentTables,
+    TheSelectedNodesTable,
+    TheKinaseActivityThresholder,
     responsecurve,
     downloader
+  },
+  metaInfo () {
+    return {
+      title: 'PTMNavigator',
+      titleTemplate: '%s | ProteomicsDB',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'description', content: 'Discover how PTMs are regulated across biochemical pathways.' }
+      ]
+    }
   },
   data () {
     return {
@@ -1026,12 +1209,16 @@ export default {
       selectedCurveIDs: [],
       selectedDrugNames: [],
       selectedCurvesFullProteome: false,
+      selectedPeptidesTableData: [],
+      selectedProteinsTableData: [],
       // graphdataSkeleton holds just the information from KEGG/Wikipathway, plus potential FullProteome Information
       graphdataSkeleton: undefined,
       infoboxContent: undefined,
       downloadCurveLoading: false,
       downloadPathwayLoading: false,
       downloadEnrichmentCsvLoading: false,
+      downloadSelectedPeptidesCsvLoading: false,
+      downloadSelectedProteinsCsvLoading: false,
       dataTabs: 1, // Initially show userDataMode
       uuid: '',
       selectedUserDatasets: [],
@@ -1058,17 +1245,9 @@ export default {
       graphWidth: null,
       ptmNavigatorLogo: require('@/assets/ptmnavigatorlogo.png'),
       leftExpansionPanel: [],
-      enrichmentResponses: {
-        ptmsea: [],
-        gc: [],
-        gcr: [],
-        ksea: [],
-        ksea_rokai: [],
-        motif: [],
-        kea3: [],
-        kstar: []
-      },
+      enrichmentResponses: {},
       pathwaygraphApplicationMode: 'viewing',
+      enrichmentOrSelectionTable: 'enrichment',
       pathwayEditTemplateCanonicalOrCustom: 0,
       pathwayViewCanonicalOrCustom: 0,
       customPathwayList: [],
@@ -1088,11 +1267,18 @@ export default {
         KSEA: 'ksea',
         'RoKAI+KSEA': 'ksea_rokai',
         MOTIF: 'motif',
-        KEA3: 'kea3',
+        KEA3: 'kea3', // Comes out of the backend like this, but we split it into kea3_mean and kea3_top
         KSTAR: 'kstar'
       },
-      kseaRokaiPerturbedNodes: { up: [], down: [] },
-      defaultSessionId: '0123456789ABCDEF0123456789ABCDEF'
+      perturbedNodes: { up: [], down: [], undirected: [] },
+      defaultSessionId: '0123456789ABCDEF0123456789ABCDEF',
+      selectedDatasetNameForGCRSorting: undefined,
+      customPathwayNameRules: {
+        required: value => !!value || 'Required',
+        minLength: value => (!!value && value.length >= 4) || 'Please enter at least 4 characters.'
+      },
+      saveCustomPathwayFormValid: true,
+      toggleKey: 0 // A hack to force the viewing/editing toggle to be updated
 
     }
   },
@@ -1139,19 +1325,25 @@ export default {
 
     existsReferenceProteomeInPrDB () {
       return !this.selectedOrganism || [3702, 9606, 10090].includes(this.selectedOrganism.value)
+    },
+
+    datasetNamesForGCRSorting () {
+      return Object.keys(this.enrichmentResponses).filter(
+        datasetName => Object.keys(this.enrichmentResponses[datasetName]).includes('gcr') &&
+              this.enrichmentResponses[datasetName].gcr.length > 0)
     }
   },
   watch: {
     uuid: {
       immediate: true,
       async handler (newVal, oldVal) {
+        // Validate the UUID
         if (newVal && newVal !== oldVal && newVal.length === 32) {
           const response = await axios.get(
             this.$store.state.host +
                         '/proteomicsdb/logic/secure/checkSessionId.xsjs',
             { params: { uuid: newVal } }
           )
-
           if (response.data.cookieStatus === 0) {
             const d = new Date()
             d.setTime(d.getTime() + 14 * 24 * 60 * 60 * 1000)
@@ -1160,8 +1352,14 @@ export default {
               this.$cookie.set('analyticsUploadSessionID', this.uuid, { expires: d })
             }
             this.userDatasets = response.data.datasets.filter(d => d.omicsType.startsWith('decryptM') || d.omicsType.startsWith('FoldChange'))
-            this.selectedUserDatasets = []
-            await this.getCustomPathwayList()
+            // Only do the following in view mode. In edit mode, we don't want to lose the graph and the values that
+            // are changed here do not matter anyways.
+            if (this.pathwaygraphApplicationMode === 'viewing') {
+              this.selectedUserDatasets = []
+              await this.getCustomPathwayList()
+              this.selectedCustomPathway = null
+              await this.onCustomPathwaySelectionChange()
+            }
           }
         }
       }
@@ -1178,29 +1376,17 @@ export default {
         if (newVal) { this.selectedCanonicalPathway = undefined }
       }
     },
-    pathwaygraphApplicationMode: {
-      async handler (newVal) {
-        if (newVal === 'editing') {
-          if (!this.graphdataSkeleton) {
-            // Initialize editor with empty pathway
-            this.graphdataSkeleton = { nodes: [], links: [] }
-          } else if (this.selectedCustomPathway) {
-            await this.useCopyOrModify()
-          }
-        }
-        if (newVal === 'viewing') {
-          await this.editSaveOrDiscard()
-          if (this.editResetDialogReturnVal === 'cancel') {
-            this.pathwaygraphApplicationMode = 'editing'
-          } else {
-            this.graphdataSkeleton = undefined
-            this.selectedCanonicalPathway = undefined
-            this.selectedCustomPathway = undefined
-          }
-          this.editResetDialogReturnVal = null
-        }
-        const pathwayGraphObject = document.getElementById('biowc-pathwaygraph')
-        pathwayGraphObject?.switchApplicationMode(newVal)
+
+    datasetNamesForGCRSorting: {
+      handler () {
+        // Auto-select the first value
+        if (this.datasetNamesForGCRSorting.length > 0) { this.selectedDatasetNameForGCRSorting = this.datasetNamesForGCRSorting[0] }
+      }
+    },
+    selectedDatasetNameForGCRSorting: {
+      handler () {
+        this.clearPathwayGraph()
+        this.getGCRSortedPathwayList()
       }
     }
   },
@@ -1218,7 +1404,7 @@ export default {
     this.graphWidth = document.querySelector('#spacereservedforgraph').clientWidth - 35
     window.addEventListener('resize', this.onResize)
     await this.loadOrganisms()
-    await this.getPathwayList()
+    await this.getCanonicalPathwayList()
     await this.getCustomPathwayList()
     // Expand the accordion on the left side (all tabs except the 'currently selected', bc there is nothing selected initially)
     // This is done by adding the indices of the open items to the array modeling the panel
@@ -1242,7 +1428,6 @@ export default {
     },
 
     async loadOrganisms () {
-      // Online version
       const organismResponse = await axios.get(
         this.$store.state.host +
                 '/proteomicsdb/logic/pathwaycentric/getAllOrganismsWithPathways.xsjs')
@@ -1254,7 +1439,6 @@ export default {
       this.previouslySelectedOrganism = this.selectedOrganism
     },
 
-    // Online Version
     loadProjects: function () {
       return axios
         .get(
@@ -1292,7 +1476,6 @@ export default {
     },
 
     async getCustomPathwayList () {
-      // Online Version
       const customPathwayListResponse = await axios.get(this.$store.state.host + '/proteomicsdb/logic/customUserData/getUserCustomPathways.xsjs',
         {
           params: {
@@ -1307,12 +1490,9 @@ export default {
           json: pw.pathwayJSON
         }
       })
-      this.selectedCustomPathway = null
-      this.onCustomPathwaySelectionChange()
     },
 
-    async getPathwayList () {
-      // Online Version
+    async getCanonicalPathwayList () {
       const pathwayListResponse = await axios.get(this.$store.state.host + '/proteomicsdb/logic/pathwaycentric/getAllPathways.xsjs/',
         {
           params: {
@@ -1331,38 +1511,44 @@ export default {
       this.pathwayListFiltered = this.pathwayList
     },
 
-    async getGCRSortedPathwayList () {
-      await this.getPathwayList()
+    getGCRSortedPathwayList () {
       const gcrScoresMap = {}
-
-      this.enrichmentResponses.gcr.forEach(entry => {
-        // Map each signature to the sum of scores over all loaded datasets
-        gcrScoresMap[entry['Signature ID']] =
-                  Object.keys(entry).map(k => k.startsWith('Score') ? Math.abs(entry[k]) : 0).reduce((a, b) => a + b, 0)
-      })
-
-      this.pathwayList.forEach(pathway => {
-        const pathwayPrefix = pathway.value.startsWith('WP') ? 'WP' : 'KEGG'
-        const pathwayTitleReformatted = pathway.title
-          .toUpperCase()
-          .replaceAll(' ', '_')
-          .replaceAll('-', '_')
-          .replaceAll(':', '_')
-          .replaceAll('(', '')
-          .replaceAll(')', '')
-        pathway.score = gcrScoresMap[
-                  `${pathwayPrefix}_${pathwayTitleReformatted}`]
-      })
-
-      this.pathwayList.sort((a, b) => {
-        if (!a.score) return 1
-        if (!b.score) return -1
-        return (a.score < b.score) ? 1 : (a.score > b.score) ? -1 : 0
-      })
-
+      // Clean up the pathway names by deleting the previous score, if present
       this.pathwayList.forEach(pw => {
-        pw.text += ` ${pw.score > 0 ? `[Score=${pw.score.toFixed(2)}]` : ''}`
+        pw.text = pw.text.split('[Score=')[0].trim()
+        pw.score = undefined
       })
+
+      if (this.selectedDatasetNameForGCRSorting) {
+        this.enrichmentResponses[this.selectedDatasetNameForGCRSorting].gcr.forEach(entry => {
+          // Map each signature to the sum of scores over all loaded experiments in the dataset
+          gcrScoresMap[entry['Signature ID']] =
+                    Object.keys(entry).map(k => k.startsWith('Score') ? Math.abs(entry[k]) : 0).reduce((a, b) => a + b, 0)
+        })
+
+        this.pathwayList.forEach(pathway => {
+          const pathwayPrefix = pathway.value.startsWith('WP') ? 'WP' : 'KEGG'
+          const pathwayTitleReformatted = pathway.title
+            .toUpperCase()
+            .replaceAll(' ', '_')
+            .replaceAll('-', '_')
+            .replaceAll(':', '_')
+            .replaceAll('(', '')
+            .replaceAll(')', '')
+          pathway.score = gcrScoresMap[
+                    `${pathwayPrefix}_${pathwayTitleReformatted}`]
+        })
+
+        this.pathwayList.sort((a, b) => {
+          if (!a.score) return 1
+          if (!b.score) return -1
+          return (a.score < b.score) ? 1 : (a.score > b.score) ? -1 : 0
+        })
+
+        this.pathwayList.forEach(pw => {
+          pw.text += ` ${pw.score > 0 ? `[Score=${pw.score.toFixed(2)}]` : ''}`
+        })
+      }
 
       this.pathwayListFiltered = this.pathwayList
     },
@@ -1373,7 +1559,7 @@ export default {
       } else {
         this.previouslySelectedOrganism = this.selectedOrganism
         this.clearPathwayGraph()
-        if (!!this.selectedUserDatasets && this.selectedUserDatasets.length > 0 && this.selectedOrganism.value === 9606) { this.getGCRSortedPathwayList() } else { this.getPathwayList() }
+        this.getCanonicalPathwayList()
       }
     },
 
@@ -1458,6 +1644,8 @@ export default {
           this.constructPathwaySkeleton(JSON.parse(this.selectedCustomPathway.json))
         }
       } else if (this.pathwaygraphApplicationMode === 'editing') {
+        // We might lose the value, so store it temporarily
+        const customPathwayTemp = this.selectedCustomPathway
         await this.editSaveOrDiscard()
         if (this.editResetDialogReturnVal === 'cancel') {
           this.selectedCustomPathway = undefined
@@ -1466,6 +1654,7 @@ export default {
         this.editResetDialogReturnVal = null
         this.graphdataSkeleton = undefined
 
+        this.selectedCustomPathway = customPathwayTemp
         if (!!this.selectedCustomPathway && !!this.selectedCustomPathway.value) {
           await this.useCopyOrModify()
         }
@@ -1473,8 +1662,13 @@ export default {
     },
 
     onCanonicalPathwaySelectionChange: async function () {
+      this.selectedPeptidesTableData = []
+      this.selectedProteinsTableData = []
+      this.infoboxContent = undefined
       this.currentlyEditedPathwayId = undefined
       if (this.pathwaygraphApplicationMode === 'editing') {
+        // We might lose the value, so store it temporarily
+        const canonicalPathwayTemp = this.selectedCanonicalPathway
         await this.editSaveOrDiscard()
         if (this.editResetDialogReturnVal === 'cancel') {
           this.selectedCanonicalPathway = undefined
@@ -1482,9 +1676,9 @@ export default {
           return
         }
         this.editResetDialogReturnVal = null
+        this.selectedCanonicalPathway = canonicalPathwayTemp
       }
       this.graphdataSkeleton = undefined
-
       if (!this.selectedCanonicalPathway || !this.selectedCanonicalPathway.value) {
         return
       }
@@ -1493,7 +1687,6 @@ export default {
         this.selectedDrugNames = []
       }
 
-      // Online Version
       axios.get(`${this.$store.state.host}/proteomicsdb/logic/pathwaycentric/pathway_skeletons/json/${this.selectedOrganism.value}/` +
                 this.selectedCanonicalPathway.link).then((resp) => this.constructPathwaySkeleton(resp.data))
 
@@ -1547,6 +1740,8 @@ export default {
     },
 
     createPtmInputFromPeptideDatum (datum) {
+      // Extract dataset name
+      const datasetName = this.selectedUserDatasets.filter(d => d.datasetId === Number(datum.DATASET_ID))[0].datasetName
       // Filter out isoforms, unless there is an isoform-specific peptide
       const uniprotAccs = datum.UNIPROT_ACCS?.split(';')
       const modifiedResidues = this.getModifiedResidues(datum.MOD_SEQUENCE, datum.START_POSITIONS)
@@ -1572,6 +1767,8 @@ export default {
         // Regulation must be 'up'/'down'/'not' - sometimes 'not' comes as '-'
         regulation: (!datum.REGULATION || datum.REGULATION === '-') ? 'not' : datum.REGULATION,
         details: {
+          Dataset: datasetName,
+          'Experiment Name': datum.EXPERIMENT_NAME,
           'Modified Sequence': datum.MOD_SEQUENCE,
           'Gene Name(s)': geneNames.join(', '),
           Uniprot: uniprotAccsFiltered.map(
@@ -1607,7 +1804,6 @@ export default {
           'Curve ID': { display: false, text: datum.CURVE_ID },
           Site: { display: false, text: modifiedResiduesFiltered.join(',') },
           Uniprot_Accession_Number: { display: false, text: uniprotAccsFiltered.join(',') },
-          'Experiment Name': datum.EXPERIMENT_NAME,
           '-log(EC50)': datum.DETAILS.pEC50?.toFixed(2),
           'Fold Change': foldChange,
           'Log Fold Change': logFoldChange,
@@ -1639,6 +1835,8 @@ export default {
     },
 
     createPtmInputFromSiteDatum (datum) {
+      // Extract dataset name
+      const datasetName = this.selectedUserDatasets.filter(d => d.datasetId === Number(datum.DATASET_ID))[0].datasetName
       const [foldChange, logFoldChange] = this.determineFoldChange(datum)
       const geneNames = [...new Set(datum.GENE_NAMES?.split(';'))]
       const pspLinks = this.createPSPLinks([datum.DETAILS['p-site']], [datum.UNIPROT_ACC_ID])
@@ -1648,6 +1846,8 @@ export default {
         // Regulation must be 'up'/'down'/'not' - sometimes 'not' comes as '-'
         regulation: (!datum.REGULATION || datum.REGULATION === '-') ? 'not' : datum.REGULATION,
         details: {
+          Dataset: datasetName,
+          'Experiment Name': datum.EXPERIMENT_NAME,
           Site: datum.MOD_RSD,
           'Gene Name(s)': geneNames.join(', '),
           Uniprot: `<a href="${this.createUniProtLink(
@@ -1677,7 +1877,6 @@ export default {
           },
           'Functional Score*': datum.FUNCTIONAL_SCORES ? datum.FUNCTIONAL_SCORES.replaceAll('|', ', ') : undefined,
           'Curve ID': { display: false, text: datum.CURVE_ID },
-          'Experiment Name': datum.EXPERIMENT_NAME,
           '-log(EC50)': datum.DETAILS.pEC50?.toFixed(2),
           'Fold Change': foldChange,
           'Log Fold Change': logFoldChange,
@@ -1707,17 +1906,12 @@ export default {
     },
 
     loadUserData: async function () {
+      this.selectedPeptidesTableData = []
+      this.selectedProteinsTableData = []
+      this.infoboxContent = undefined
+
       this.ptmInputList = []
-      this.enrichmentResponses = {
-        ptmsea: [],
-        gc: [],
-        gcr: [],
-        ksea: [],
-        ksea_rokai: [],
-        motif: [],
-        kea3: [],
-        kstar: []
-      }
+
       this.userDataLoading = true
       this.dataLoadingSnackbar = true
 
@@ -1730,18 +1924,42 @@ export default {
       // Load enrichment results from the server
       const userEnrichmentResponse = await
       axios.get(this.$store.state.host + '/proteomicsdb/logic/customUserData/getUserDatasetEnrichmentResults.xsjs',
-        { params: { sessionId: this.uuid, datasetId: this.selectedUserDatasets[0].datasetId } })
+        { params: { sessionId: this.uuid, userDatasetIds: this.selectedUserDatasets.map(dataset => dataset.datasetId).join(';') } })
 
-      userEnrichmentResponse.data.forEach(enrichment => {
-        try {
-          // Since version 0.1.1, the enrichment server returns the output wrapped in 'Result' in order to also send metadata
-          // For legacy reasons we still support the old format
-          const result = JSON.parse(JSON.parse(enrichment.enrichmentJSON)).Result || JSON.parse(JSON.parse(enrichment.enrichmentJSON))
-          this.enrichmentResponses[this.enrichmentTypeMap[enrichment.enrichmentType]] = result
-        } catch (e) {
-          this.enrichmentResponses[this.enrichmentTypeMap[enrichment.enrichmentType]] = []
-        }
-      })
+      const newUserEnrichmentResponse = {}
+      Object.keys(userEnrichmentResponse.data).forEach(datasetId => {
+        const datasetName = this.selectedUserDatasets.filter(d => d.datasetId === Number(datasetId))[0].datasetName
+        newUserEnrichmentResponse[datasetName] = {}
+        userEnrichmentResponse.data[datasetId].forEach(enrichment => {
+          try {
+            // Since version 0.1.1, the enrichment server returns the output wrapped in 'Result' in order to also send metadata
+            // For legacy reasons we still support the old format
+            const result = JSON.parse(JSON.parse(enrichment.enrichmentJSON)).Result || JSON.parse(JSON.parse(enrichment.enrichmentJSON))
+
+            if (enrichment.enrichmentType === 'KEA3') {
+              // Transform the KEA Results (they are structured by Experiment,
+              // we want them structured by Enrichment Type and have the Experiment as key in there)
+              try {
+                const kea3ResultTransformed = this.transformObject(result, 'Experiment')
+                newUserEnrichmentResponse[datasetName].kea3_mean = kea3ResultTransformed.MeanRank
+                newUserEnrichmentResponse[datasetName].kea3_top = kea3ResultTransformed.TopRank
+              } catch (e) {
+                newUserEnrichmentResponse[datasetName].kea3_mean = []
+                newUserEnrichmentResponse[datasetName].kea3_top = []
+              }
+            } else if (enrichment.enrichmentType === 'KSTAR') {
+              // KSTAR: Concatenate the separate results of 'ST' and 'Y' kinases
+              newUserEnrichmentResponse[datasetName].kstar = [...result.ST || [], ...result.Y || []]
+            } else {
+              newUserEnrichmentResponse[datasetName][this.enrichmentTypeMap[enrichment.enrichmentType]] = result
+            }
+          } catch (e) {
+            newUserEnrichmentResponse[datasetName][this.enrichmentTypeMap[enrichment.enrichmentType]] = []
+          }
+        })
+      }
+      )
+      this.enrichmentResponses = newUserEnrichmentResponse
 
       this.fpInputList = userProteomicsDataResponse.data.fullProteomeData.map(datum => {
         return {
@@ -1787,24 +2005,6 @@ export default {
       const organismOfFirstDataset = userProteomicsDataResponse.data.datasetInfo[0].TAXCODE || 9606
       this.selectedOrganism = this.organismList.filter(org => org.value === organismOfFirstDataset)[0]
 
-      await this.getGCRSortedPathwayList()
-
-      // Hand perturbed kinases over to the biowc-pathwaygraph component
-      this.kseaRokaiPerturbedNodes = { up: [], down: [] }
-      // Obtain the summed scores for each gene
-      this.enrichmentResponses.ksea_rokai.map(entry => {
-        return {
-          Gene: entry.Gene,
-          Score: Object.keys(entry).filter(key => key.startsWith('Score')).reduce((res, key) => res + entry[key], 0)
-        }
-        // Filter for those where the absolute score surpasses a threshold - for now, 0.5
-      }).forEach(entry => {
-        if (Math.abs(entry.Score) > 0.5) {
-          if (entry.Score > 0) { this.kseaRokaiPerturbedNodes.up.push(entry.Gene) } else { this.kseaRokaiPerturbedNodes.down.push(entry.Gene) }
-        }
-      })
-      // kseaRokaiPerturbedNodes is passed as a property to biowc-pathwaygraph, so it will know about this.
-
       this.doneSnackbar = true
 
       this.dataLoadingSnackbar = false
@@ -1823,6 +2023,10 @@ export default {
       this.selectedCanonicalPathway = null
       this.selectedCustomPathway = null
       this.selectedCurveIDs = []
+      this.selectedPeptidesTableData = []
+      this.selectedProteinsTableData = []
+      this.infoboxContent = undefined
+
       if (!this.isUserDataMode) {
         this.selectedDrugNames = []
       }
@@ -1835,7 +2039,7 @@ export default {
       this.fpInputList = []
       this.fpInputListFiltered = []
       this.selectedUserDatasets = []
-      this.getPathwayList()
+      this.getCanonicalPathwayList()
     },
     clearPrdbData () {
       this.selectedCurveIDs = []
@@ -1845,7 +2049,7 @@ export default {
       this.fpInputListFiltered = []
       this.selectedDrugNames = []
       this.selectedExperimentDesigns = []
-      this.getPathwayList()
+      this.getCanonicalPathwayList()
     },
     async loadPrdbData () {
       this.ptmInputList = []
@@ -1950,7 +2154,7 @@ export default {
       // Set organism to Homo sapiens - all the data that you can load as of now is Homo sapiens
       this.selectedOrganism = this.organismList.filter(org => org.value === 9606)[0]
 
-      await this.getPathwayList()
+      await this.getCanonicalPathwayList()
       this.doneSnackbar = true
       this.dataLoadingSnackbar = false
       this.prdbDataLoading = false
@@ -1961,33 +2165,46 @@ export default {
       this.leftExpansionPanel = this.leftExpansionPanel.filter(val => ![0, 1].includes(val))
     },
     async saveCustomPathway () {
-      const exportedSkeleton = document.getElementById('biowc-pathwaygraph').exportSkeleton()
+      if (this.$refs.saveCustomPathwayForm.validate()) {
+        const exportedSkeleton = document.getElementById('biowc-pathwaygraph').exportSkeleton()
 
-      // If the user does not have a session ID yet, create it
-      if (!this.$cookie.get('analyticsUploadSessionID')) {
-        const sessionIdResponse = await axios.get(
-          this.$store.state.host +
-                '/proteomicsdb/logic/secure/checkSessionId.xsjs'
-        )
-        this.uuid = sessionIdResponse.data.uuid
+        // If the user does not have a session ID yet, create it
+        if (!this.$cookie.get('analyticsUploadSessionID')) {
+          const sessionIdResponse = await axios.get(
+            this.$store.state.host +
+                    '/proteomicsdb/logic/secure/checkSessionId.xsjs'
+          )
+          this.uuid = sessionIdResponse.data.uuid
+        }
+
+        const response = await axios
+          .put(this.$store.state.host + '/proteomicsdb/logic/secure/storeCustomPathway.xsjs', exportedSkeleton,
+            {
+              params: {
+                uuid: this.uuid,
+                pathwayName: this.customPathwayName,
+                customPathwayId: this.currentlyEditedPathwayId
+              },
+              headers: { 'X-CSRF-Token': 'unsafe', 'Content-Type': 'application/json' }
+            })
+
+        this.currentlyEditedPathwayId = response.data
+        this.editorContainsUnsavedChanges = false
+        await this.getCustomPathwayList()
       }
+    },
 
-      const response = await axios
-        .put(this.$store.state.host + '/proteomicsdb/logic/secure/storeCustomPathway.xsjs', exportedSkeleton,
-          {
-            params: {
-              uuid: this.uuid,
-              pathwayName: this.customPathwayName,
-              customPathwayId: this.currentlyEditedPathwayId
-            },
-            headers: { 'X-CSRF-Token': 'unsafe', 'Content-Type': 'application/json' }
-          })
-
-      this.currentlyEditedPathwayId = response.data
-
-      await this.getCustomPathwayList()
-
-      this.editorContainsUnsavedChanges = false
+    async onClearCanvas () {
+      if (this.editorContainsUnsavedChanges) {
+        await this.editSaveOrDiscard()
+      }
+      if (this.editResetDialogReturnVal === 'discard' || !this.editorContainsUnsavedChanges) {
+        this.graphdataSkeleton = { nodes: [], links: [] }
+        this.customPathwayName = undefined
+        this.selectedCustomPathway = null
+        this.selectedCanonicalPathway = null
+      }
+      this.editResetDialogReturnVal = null
     },
 
     async editSaveOrDiscard () {
@@ -2002,9 +2219,8 @@ export default {
                 this.editorContainsUnsavedChanges = false
                 break
               case 'discard':
-                this.graphdataSkeleton = { nodes: [], links: [] }
+                this.clearPathwayGraph()
                 this.editorContainsUnsavedChanges = false
-                this.customPathwayName = undefined
                 break
               case 'cancel':
                 break
@@ -2014,16 +2230,14 @@ export default {
             resolve()
           })
         })
-      } else {
-        this.graphdataSkeleton = { nodes: [], links: [] }
-        this.customPathwayName = undefined
       }
     },
 
     async useCopyOrModify () {
       this.showCustomPathwayEditCopyQuestionDialog = true
+      let unwatch
       await new Promise(resolve => {
-        this.$watch('editCopyQuestionDialogReturnVal', (val) => {
+        unwatch = this.$watch('editCopyQuestionDialogReturnVal', (val) => {
           this.showCustomPathwayEditCopyQuestionDialog = false
           switch (val) {
             case 'useCopy':
@@ -2042,23 +2256,44 @@ export default {
             this.selectedDrugNames = []
           }
           this.constructPathwaySkeleton(JSON.parse(this.selectedCustomPathway.json))
-          // Reset value so watcher can be triggered again next time
-          this.editCopyQuestionDialogReturnVal = undefined
           resolve()
         })
       })
+      // Reset value so watcher can be triggered again next time
+      unwatch()
+      this.editCopyQuestionDialogReturnVal = undefined
     },
 
     onSelectionChanged: function (newSelection) {
-      this.selectedCurvesFullProteome = newSelection.detail.isFullProteome
+      this.selectedPeptidesTableData = newSelection.detail.selection_peptide
+      this.selectedProteinsTableData = newSelection.detail.selection_protein
+
       // If there are curves, display them
       // If the selection contains full proteome data, 'Curve ID' might be a string of comma-separated values
       // So split preventively and flatten into a level one array
-      this.selectedCurveIDs = newSelection.detail.selection.flatMap(sel => sel['Curve ID'] ? String(sel['Curve ID']).split(',') : undefined).filter(curveid => !!curveid)
+      // We cannot show PTM and Protein Curves together, so:
+      // Give PTM precedence, but if it is not present check for Protein
+      this.selectedCurveIDs = this.selectedPeptidesTableData
+        .flatMap(sel => sel['Curve ID']
+          ? String(sel['Curve ID']).split(',')
+          : undefined)
+        .filter(curveid => !!curveid)
+      if (this.selectedCurveIDs.length > 0) {
+        this.selectedCurvesFullProteome = false
+      } else {
+        this.selectedCurveIDs = this.selectedProteinsTableData
+          .flatMap(sel => sel['Curve ID']
+            ? String(sel['Curve ID']).split(',')
+            : undefined)
+          .filter(curveid => !!curveid)
+        this.selectedCurvesFullProteome = this.selectedCurveIDs.length > 0
+      }
 
       // For PrDB data, we also need a drug name to show the curves (because of a possible combination treatment)
       if (!this.isUserDataMode) {
-        this.selectedDrugNames = newSelection.detail.selection.flatMap(sel => sel['Drug Name'] ? String(sel['Drug Name']).split(',') : undefined).filter(drugname => !!drugname)
+        this.selectedDrugNames = [
+          ...newSelection.detail.selection_peptide.flatMap(sel => sel['Drug Name'] ? String(sel['Drug Name']).split(',') : undefined).filter(drugname => !!drugname),
+          ...newSelection.detail.selection_protein.flatMap(sel => sel['Drug Name'] ? String(sel['Drug Name']).split(',') : undefined).filter(drugname => !!drugname)]
       }
     },
     onInfoboxUpdated: function (newInfoboxContent) {
@@ -2109,17 +2344,23 @@ export default {
       document.getElementById('biowc-pathwaygraph').downloadSvg()
       this.downloadPathwayLoading = false
     },
-    downloadMappedPeptidesCsv: function () {
-      this.downloadPathwayLoading = true
-      document.getElementById('biowc-pathwaygraph').downloadPeptidesCSV()
-      this.downloadPathwayLoading = false
-    },
-
     downloadEnrichmentCSV: function () {
       this.downloadEnrichmentCsvLoading = true
       this.$refs.pathwayEnrichmentTable.onExporting()
       this.downloadEnrichmentCsvLoading = false
     },
+
+    downloadSelectedPeptidesCSV: function () {
+      this.downloadSelectedPeptidesCsvLoading = true
+      this.$refs.selectedPeptidesTable.onExporting('Peptides')
+      this.downloadSelectedPeptidesCsvLoading = false
+    },
+    downloadSelectedProteinsCSV: function () {
+      this.downloadSelectedProteinsCsvLoading = true
+      this.$refs.selectedProteinsTable.onExporting('Proteins')
+      this.downloadSelectedProteinsCsvLoading = false
+    },
+
     renewSession () {
       uploadUtils.renewSession(this.$store.state.host, this.uuid)
     },
@@ -2178,6 +2419,69 @@ export default {
       this.constructPathwaySkeleton(JSON.parse(fileContent))
       this.customPathwayName = 'Custom Pathway from User Upload'
       this.editorContainsUnsavedChanges = true
+    },
+
+    async onApplicationModeToggle (newVal) {
+      if (newVal === 'editing') {
+        if (!this.graphdataSkeleton) {
+          // Initialize editor with empty pathway
+          this.graphdataSkeleton = { nodes: [], links: [] }
+        } else if (this.selectedCustomPathway) {
+          await this.useCopyOrModify()
+        }
+        this.pathwaygraphApplicationMode = 'editing'
+        const pathwayGraphObject = document.getElementById('biowc-pathwaygraph')
+        pathwayGraphObject?.switchApplicationMode('editing')
+      }
+      if (newVal === 'viewing') {
+        if (this.editorContainsUnsavedChanges) {
+          await this.editSaveOrDiscard()
+        } else {
+          // If there is no pathway visible, just clear out the canvas so that the placeholder is shown
+          if (this.graphdataSkeleton.nodes.length === 0) { this.clearPathwayGraph() }
+        }
+        if (this.editResetDialogReturnVal === 'cancel') {
+          this.toggleKey++// A hack to force the viewing/editing toggle to be updated
+        } else {
+          // Just in case this hasn't happened yet (I've seen it...)
+          this.editorContainsUnsavedChanges = false
+          this.pathwaygraphApplicationMode = 'viewing'
+          this.customPathwayName = undefined
+          const pathwayGraphObject = document.getElementById('biowc-pathwaygraph')
+          pathwayGraphObject?.switchApplicationMode('viewing')
+        }
+        this.editResetDialogReturnVal = null
+      }
+    },
+
+    // This function flattens an object in the following way:
+    // {'E1': {'x':[{'a':1, 'b':2}, {'a':4, 'b':6}], 'y':[{'a':1, 'b':2}, {'a':1, 'b':2}]}} ==>
+    // {{'x':[{'<category>': 'E1', 'a':1, 'b':2}, {'<category>': 'E1', 'a':4, 'b':6}],
+    // 'y':[{'<category>': 'E1', 'a':1, 'b':2}, {'<category>': 'E1', 'a':1, 'b':2}]}}
+    transformObject (inputObj, category) {
+      const outputObj = {}
+
+      // Iterate through the main keys of the input object (e.g., 'E1')
+      for (const categoryKey in inputObj) {
+        const innerObj = inputObj[categoryKey]
+
+        // Iterate through the nested keys of the inner object (e.g., 'a', 'b')
+        for (const innerKey in innerObj) {
+          if (!outputObj[innerKey]) {
+            outputObj[innerKey] = []
+          }
+
+          // Iterate through the array of objects and add 'category' key to each object
+          innerObj[innerKey].forEach(item => {
+            // Create a new object with 'category' and spread the original item
+            const newObj = { ...item }
+            newObj[category] = categoryKey
+            outputObj[innerKey].push(newObj)
+          })
+        }
+      }
+
+      return outputObj
     }
   }
 }
